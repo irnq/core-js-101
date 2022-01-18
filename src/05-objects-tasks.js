@@ -20,8 +20,14 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  return {
+    width,
+    height,
+    getArea() {
+      return width * height;
+    },
+  };
 }
 
 
@@ -35,8 +41,8 @@ function Rectangle(/* width, height */) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(/* obj */) {
-  throw new Error('Not implemented');
+function getJSON(obj) {
+  return JSON.stringify(obj);
 }
 
 
@@ -51,8 +57,10 @@ function getJSON(/* obj */) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
+function fromJSON(proto, json) {
+  const param = JSON.parse(json);
+  Object.setPrototypeOf(param, proto);
+  return param;
 }
 
 
@@ -111,33 +119,91 @@ function fromJSON(/* proto, json */) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  stringify() {
+    const string = `${this.el || ''}${this.ID || ''}${this.CLASS || ''}${this.ATTR || ''}${this.PClass || ''}${this.PElement || ''}`;
+    this.clearValue();
+    return string;
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  clearValue() {
+    Object.keys(this).forEach((key) => {
+      if (typeof this[key] === 'string') {
+        this[key] = null;
+      }
+    });
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+
+  element(value) {
+    const temp = { ...this };
+    if (temp.PElement || temp.PClass || temp.ATTR || temp.CLASS || temp.ID) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    if (temp.el) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    temp.el = value;
+    return temp;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    const temp = { ...this };
+    if (temp.PElement || temp.PClass || temp.ATTR || temp.CLASS) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    if (temp.ID) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    temp.ID = `#${value}`;
+    return temp;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    const temp = { ...this };
+    if (temp.PElement || temp.PClass || temp.ATTR) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    temp.CLASS = temp.CLASS ? `${temp.CLASS}.${value}` : `.${value}`;
+    return temp;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    const temp = { ...this };
+    if (temp.PElement || temp.PClass) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    temp.ATTR = `[${value}]`;
+    return temp;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    const temp = { ...this };
+    if (temp.PElement) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    temp.PClass = temp.PClass ? `${temp.PClass}:${value}` : `:${value}`;
+    return temp;
   },
+
+  pseudoElement(value) {
+    const temp = { ...this };
+    if (temp.PElement) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    temp.PElement = `::${value}`;
+    return temp;
+  },
+
+  combine(selector1, combinator, selector2) {
+    const result = {
+      str: `${selector1.stringify()} ${combinator} ${selector2.stringify()}`,
+      stringify() {
+        return this.str;
+      },
+    };
+    return result;
+  },
+
 };
 
 
