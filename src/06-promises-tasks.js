@@ -5,7 +5,6 @@
  *                                                                                                *
  ************************************************************************************************ */
 
-
 /**
  * Return Promise object that is resolved with string value === 'Hooray!!! She said "Yes"!',
  * if boolean value === true is passed, resolved with string value === 'Oh no, she said "No".',
@@ -36,7 +35,6 @@ function willYouMarryMe(isPositiveAnswer) {
     return rej(new Error('Wrong parameter is passed! Ask her again.'));
   });
 }
-
 
 /**
  * Return Promise object that should be resolved with array containing plain values.
@@ -98,10 +96,15 @@ function getFastestPromise(array) {
  *
  */
 function chainPromises(array, action) {
-  // return ;res(array.map((p) => Promise.resolve(p)).reduce(action))
-  // const fu = ;
-
+  return new Promise((res) => {
+    const arr = [];
+    array.forEach((value) => value.then((resolve) => arr.push(resolve)));
+    return res(arr);
+  }).then((res) => res.reduce(action));
+  // return new Promise((res) => res(array.map((value) => value.then((resolve) => resolve))))
+  //   .then((res) => res.reduce(action));
 }
+// res(array.map((value) => value.then((resolve) => resolve))
 
 module.exports = {
   willYouMarryMe,
