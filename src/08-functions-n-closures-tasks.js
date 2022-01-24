@@ -90,7 +90,7 @@ function memoize(func) {
       if (!cash[operation]) cash[operation] = func.apply(this, args);
       return cash[operation];
     }
-    return function (...arguments2) {
+    return function unnamed(...arguments2) {
       const operation = JSON.stringify(args.concat(arguments2));
       if (!cash[operation]) cash[operation] = curried.apply(this, args.concat(arguments2));
       return cash[operation];
